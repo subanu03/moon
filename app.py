@@ -1,10 +1,6 @@
-from flask import Flask
-
-app = Flask(__name__)
-
-@app.route('/')
-def hello():
-    return "Hello, Jenkins + Docker + Python!"
+# app.py
+def main():
+    print("Hello from Python in Jenkins!")
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080)
+    main()

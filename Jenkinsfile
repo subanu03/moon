@@ -1,83 +1,25 @@
 pipeline {
     agent any
-
-    environment {
-        GIT_REPO = "https://github.com/subanu03/moon.git"
-        APP_NAME = "sunmoon-python-app"
-    }
-
     triggers {
-        pollSCM('H/1 * * * *')
+        // This triggers the pipeline when GitHub sends a push
+        githubPush()
     }
-
     stages {
-
-        stage('Checkout Code') {
+        stage('Clone Repository') {
             steps {
-                git branch: 'main', url: "${env.GIT_REPO}"
-                script {
-                    COMMIT_HASH = bat(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    echo "Git commit hash: ${COMMIT_HASH}"
-                }
+                git branch: 'main', url: 'https://github.com/yourusername/python-jenkins-demo.git'
             }
         }
-
-        stage('Build Docker Image') {
+        stage('Install Python Dependencies') {
             steps {
-                script {
-                    IMAGE_TAG = "${APP_NAME}:${COMMIT_HASH}"
-                    echo "Building Docker image ${IMAGE_TAG}"
-                    bat "docker build -t ${IMAGE_TAG} ."
-                }
+                sh 'python3 -m venv venv'
+                sh '. venv/bin/activate && pip install -r requirements.txt'
             }
         }
-
-        stage('Stop Previous Container') {
+        stage('Run Python Script') {
             steps {
-                script {
-                    bat """
-                    @echo off
-                    docker ps -q -f name=${APP_NAME}-container >nul 2>&1
-                    if not errorlevel 1 (
-                        docker stop ${APP_NAME}-container
-                        docker rm ${APP_NAME}-container
-                    )
-                    """
-                }
+                sh '. venv/bin/activate && python app.py'
             }
-        }
-
-        stage('Run Docker Container') {
-            steps {
-                script {
-                    bat "docker run -d --name ${APP_NAME}-container -p 8080:8080 ${IMAGE_TAG}"
-                }
-            }
-        }
-
-        stage('Show Container Logs') {
-            steps {
-                script {
-                    bat "docker logs ${APP_NAME}-container --tail 50"
-                }
-            }
-        }
-
-        stage('Cleanup Old Docker Images') {
-            steps {
-                script {
-                    bat "docker image prune -af"
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Deployment successful: ${IMAGE_TAG}"
-        }
-        failure {
-            echo "❌ Deployment failed. Check logs."
         }
     }
 }
