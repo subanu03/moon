@@ -7,7 +7,7 @@ pipeline {
     }
 
     triggers {
-        pollSCM('H/1 * * * *')  // Poll every minute as backup
+        pollSCM('H/1 * * * *')
     }
 
     stages {
@@ -36,8 +36,12 @@ pipeline {
             steps {
                 script {
                     bat """
-                    docker stop ${APP_NAME}-container || exit 0
-                    docker rm ${APP_NAME}-container || exit 0
+                    @echo off
+                    docker ps -q -f name=${APP_NAME}-container >nul 2>&1
+                    if not errorlevel 1 (
+                        docker stop ${APP_NAME}-container
+                        docker rm ${APP_NAME}-container
+                    )
                     """
                 }
             }
@@ -54,7 +58,7 @@ pipeline {
         stage('Show Container Logs') {
             steps {
                 script {
-                    bat "docker logs ${APP_NAME}-container --tail 20"
+                    bat "docker logs ${APP_NAME}-container --tail 50"
                 }
             }
         }
@@ -62,7 +66,7 @@ pipeline {
         stage('Cleanup Old Docker Images') {
             steps {
                 script {
-                    bat "docker image prune -f"
+                    bat "docker image prune -af"
                 }
             }
         }
