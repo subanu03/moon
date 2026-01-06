@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GIT_REPO = "https://github.com/subanu03/moon.git"
-        APP_NAME = "sunmoon-python-app"
+        APP_NAME = "sunmoon-trigger-app"
     }
 
     triggers {
