@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/yourusername/python-jenkins-demo.git'
+                git branch: 'main', url: 'https://github.com/subanu03/moon.git', 
             }
         }
         stage('Install Python Dependencies') {
