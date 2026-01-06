@@ -16,12 +16,14 @@ pipeline {
 
         stage('Install Python Dependencies') {
             steps {
-                // Create venv and install dependencies in one command
-                bat '''
-                python -m venv venv && ^
-                venv\\Scripts\\python -m pip install --upgrade pip && ^
-                venv\\Scripts\\pip install -r requirements.txt
-                '''
+                // Create virtual environment
+                bat 'python -m venv venv'
+
+                // Upgrade pip inside venv
+                bat 'venv\\Scripts\\python -m pip install --upgrade pip'
+
+                // Install dependencies from requirements.txt
+                bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }
 
