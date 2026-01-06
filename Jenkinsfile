@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     triggers {
-        githubPush()  // Trigger on GitHub push
+        githubPush()
     }
 
     stages {
@@ -16,14 +16,19 @@ pipeline {
 
         stage('Install Python Dependencies') {
             steps {
-                bat 'python -m venv venv'
-                bat 'venv\\Scripts\\activate && pip install -r requirements.txt'
+                // Create venv and install dependencies in one command
+                bat '''
+                python -m venv venv && ^
+                venv\\Scripts\\python -m pip install --upgrade pip && ^
+                venv\\Scripts\\pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Run Python Script') {
             steps {
-                bat 'venv\\Scripts\\activate && python app.py'
+                // Run the app using the venv Python
+                bat 'venv\\Scripts\\python app.py'
             }
         }
     }
