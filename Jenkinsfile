@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "pythonapp:latest"
-        GIT_REPO = "https://github.com/yourusername/your-repo.git"
+        DOCKER_IMAGE = "sunmoon-python-app"    // Name of your Docker image
+        GIT_REPO = "https://github.com/subanu03/moon.git"
     }
 
     triggers {
-        // Git webhook will trigger automatically
-        pollSCM('H/1 * * * *')
+        // GitHub webhook triggers this automatically
+        pollSCM('H/1 * * * *')  // Backup: polls every minute
     }
 
     stages {
@@ -22,7 +22,17 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${env.DOCKER_IMAGE}")
+                    echo "Building Docker image..."
+                    docker.build("${env.DOCKER_IMAGE}:latest")
+                }
+            }
+        }
+
+        stage('Stop Existing Container') {
+            steps {
+                script {
+                    // Stop and remove old container if it exists
+                    sh "docker rm -f sunmoon-container || true"
                 }
             }
         }
@@ -30,15 +40,15 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    sh "docker rm -f pythonapp-container || true"
-                    sh "docker run -d --name pythonapp-container -p 8080:8080 ${env.DOCKER_IMAGE}"
+                    // Run new container
+                    sh "docker run -d --name sunmoon-container -p 8080:8080 ${env.DOCKER_IMAGE}:latest"
                 }
             }
         }
 
         stage('Cleanup') {
             steps {
-                echo "Python app deployed successfully!"
+                echo "Python Docker app deployed successfully!"
             }
         }
     }
